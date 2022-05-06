@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MilbridgeHoldings.Models.Data;
 using MilbridgeHoldings.Models.Data.Local;
+using MilbridgeHoldings.Services;
+using ModelLibrary.Services;
+using PasswordOptions = MilbridgeHoldings.Services.PasswordOptions;
 
 namespace MilbridgeHoldings.Controllers
 {
@@ -25,7 +28,18 @@ namespace MilbridgeHoldings.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] RegisterUserRequest user)
         {
-
+            var password = PasswordService.GeneratePassword(PasswordOptions.HasCapitals | PasswordOptions.HasDigits | PasswordOptions.HasLower |
+                  PasswordOptions.HasSymbols | PasswordOptions.NoRepeating);
+            var result = await _userManager.CreateAsync(new Employee
+            {
+                Name = user.Name,
+                Surname = user.Surname,
+                Email = user.Email,
+                EmployeeNumber = user.EmployeeNumber,
+                DepartmentId = user.DepartmentId,
+                JobTitleId = user.JobTitleId,
+            },password);
+            return Ok(result);
         }
     }
 }
