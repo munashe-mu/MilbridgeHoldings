@@ -1,4 +1,4 @@
-﻿namespace ModelLibrary.Services
+﻿namespace MilbridgeHoldings.Services
 {
     using Microsoft.AspNet.Identity;
     using System;
@@ -12,19 +12,21 @@
             {
                 MailMessage msg = new MailMessage();
                 msg.To.Add(message.Destination);
-                msg.From = new MailAddress(message.Destination, "Crisis Modifier Mail", System.Text.Encoding.UTF8);
+                msg.From = new MailAddress(message.Destination, "Milbridge Holdings SA", System.Text.Encoding.UTF8);
                 msg.Subject = message.Subject;
                 msg.SubjectEncoding = System.Text.Encoding.UTF8;
                 msg.Body = message.Body;
                 msg.BodyEncoding = System.Text.Encoding.UTF8;
                 msg.IsBodyHtml = true;
                 msg.Priority = MailPriority.High;
-                SmtpClient client = new SmtpClient();
-                client.Credentials = new System.Net.NetworkCredential("afrosoft2013@gmail.com", "%$Afro12345");
-                client.Port = 587;
-                client.Host = "smtp.gmail.com";
-                client.EnableSsl = true;
-                client.UseDefaultCredentials = false;
+                SmtpClient client = new()
+                {
+                    Credentials = new System.Net.NetworkCredential("nyashagumbo0@gmail.com", "nyasha gumbo"),
+                    Port = 587,
+                    Host = "smtp.gmail.com",
+                    EnableSsl = true,
+                    UseDefaultCredentials = false
+                };
 
                 try
                 {

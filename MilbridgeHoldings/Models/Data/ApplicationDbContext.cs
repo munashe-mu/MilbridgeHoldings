@@ -1,11 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MilbridgeHoldings.Data;
 
 namespace MilbridgeHoldings.Models.Data
 {
-    public class ApplicationDbContext:DbContext 
+    public class ApplicationDbContext:IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
 
 
         public DbSet<WorkCentre> WorkCentres { get; set; }

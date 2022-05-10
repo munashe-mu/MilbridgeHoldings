@@ -13,14 +13,14 @@
     {
         private readonly IConfiguration _configuration;
         private readonly ApplicationDbContext _context;
-     
+
         public ApplicationJwtService(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
         }
 
-        public string JwtTokenBuilder(Employee user, IList<string> roles)
+        public string JwtTokenBuilder(ApplicationUser user, IList<string> roles)
         {
             List<Claim> claims = new();
             claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Email));
@@ -41,7 +41,7 @@
             return tokenHandler.WriteToken(token);
         }
 
-        public string JwtTokenBuilderMember(Employee member)
+        public string JwtTokenBuilderMember(ApplicationUser member)
         {
 
 
