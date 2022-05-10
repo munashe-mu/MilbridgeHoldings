@@ -39,6 +39,9 @@ namespace MilbridgeHoldings.Controllers
                 FullName = user.FullName,
                 Email = user.Email,
                 UserName = user.Email,
+                EmployeeNumber = user.EmployeeNumber,
+                DepartmentId = user.DepartmentId,
+                JobTitleId = user.JobTitleId,
                 PhoneNumber = user.PhoneNumber,
             }, password);
 
