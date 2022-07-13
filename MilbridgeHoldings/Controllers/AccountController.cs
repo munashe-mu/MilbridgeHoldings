@@ -19,13 +19,15 @@ namespace MilbridgeHoldings.Controllers
         private readonly Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly Microsoft.AspNetCore.Identity.RoleManager<IdentityRole> _roleManager;
+        private readonly IEmailService _emailService;
 
-        public AccountController(ApplicationDbContext context, Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager, Microsoft.AspNetCore.Identity.RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        public AccountController(ApplicationDbContext context, Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> userManager, Microsoft.AspNetCore.Identity.RoleManager<IdentityRole> roleManager, IConfiguration configuration, IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
             _configuration = configuration;
             _roleManager = roleManager;
+            _emailService = emailService;
         }
 
         [HttpPost]
@@ -48,10 +50,10 @@ namespace MilbridgeHoldings.Controllers
             if (result.Succeeded)
 
             {
-                await new EmailService().SendAsync(new Microsoft.AspNet.Identity.IdentityMessage
+                await _emailService.SendAsync(new EmailMessage
                 {
                     Body = "You have been registered on MilBridge Holdings SA System. Your password is " + password,
-                    Destination = user.Email,
+                    To = user.Email,
                     Subject = "Milbidge Holdings SA"
                 });
                 return Ok(user);
@@ -75,7 +77,7 @@ namespace MilbridgeHoldings.Controllers
             if (!(user != null && await _userManager.CheckPasswordAsync(user, login.Password))) return Unauthorized();
             IList<string> rolesId = new List<string>();
             foreach (var role in roles)
-                rolesId.Add(_roleManager?.Roles?.ToList().Where(a => a.Name.Equals(role)).FirstOrDefault()?.Id);
+                rolesId.Add(_roleManager?.Roles?.ToList().FirstOrDefault(a => a.Name.Equals(role))?.Id);
             return Ok(new AuthenticationData
             {
                 Token = new ApplicationJwtService(_context, _configuration).JwtTokenBuilder(user, roles),
@@ -106,10 +108,10 @@ namespace MilbridgeHoldings.Controllers
 
             if (result.Result.Succeeded)
             {
-                new EmailService().SendAsync(new IdentityMessage
+                _emailService.SendAsync(new EmailMessage
                 {
                     Body = "Your password has been reset on Milbridge Holdings SA. Your new password is " + password,
-                    Destination = user.Result.Email,
+                    To = user.Result.Email,
                     Subject = "Milbridge Holdings SA Account Reset"
                 });
             }

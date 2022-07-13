@@ -10,46 +10,57 @@ namespace MilbridgeHoldings.Controllers
     [ApiController]
     public class DepartmentsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly DepartmentRepository _departmentRepository;
+        private readonly IDepartmentRepository _departmentRepository;
 
-        public DepartmentsController(ApplicationDbContext context, DepartmentRepository departmentRepository)
+        public DepartmentsController(IDepartmentRepository departmentRepository)
         {
-            _context = context;
             _departmentRepository = departmentRepository;
         }
 
         [HttpGet]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
-        public IEnumerable<Department> Get() => new DepartmentRepository(_context).Find();
+        public async Task<IActionResult> Get()
+        {
+            var result = await _departmentRepository.Find();
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public IEnumerable<Department> GetByJobTitleById(int id) => new DepartmentRepository(_context).FindByJobId(id);
+        public async Task<IActionResult> GetDeptById(int id)
+        {
+            var result = await _departmentRepository.FindDeptById(id);
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
+
+        [HttpGet("getDeptById/{id}")]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByDeptsById(int id)
+        {
+            var result = await _departmentRepository.FindById(id);
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
 
         [HttpPost]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-
         public async Task<IActionResult> Post([FromBody] DepartmentRequest request)
         {
-            var dept = await new DepartmentRepository(_context).AddDepartment(new Department
+            var dept = await _departmentRepository.Add(new Department
             {
                 Name = request.Name,
             });
-
             return StatusCode(StatusCodes.Status200OK, dept);
         }
 
         [HttpPut("update")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-
         public async Task<IActionResult> Update([FromBody] Department req)
         {
-
-            var result = await _departmentRepository.UpdateAsync(new Department
+            var result = await _departmentRepository.Update(new Department
             {
                 Id = req.Id,
                 Name = req.Name,
@@ -60,21 +71,6 @@ namespace MilbridgeHoldings.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public IActionResult DeleteTask([FromRoute] int id)
-        {
-            try
-            {
-                var repo = new DepartmentRepository(_context);
-                var deptToDelete = repo.FindById(id);
-                if (deptToDelete == null) return NotFound($"Dept with Id = {id} not found");
-                repo.Delete(id);
-                return Ok("Deleted Successfully");
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                "Error deleting data");
-            }
-        }
+       public async Task<IActionResult> Delete(int id)=> Ok(await _departmentRepository.Delete(id));    
     }
 }

@@ -11,30 +11,44 @@ namespace MilbridgeHoldings.Controllers
     [ApiController]
     public class MachinesController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly MachinesRepository _machinesRepository;
-        public MachinesController(ApplicationDbContext context, MachinesRepository machinesRepository)
+        private readonly IMachinesRepository _machinesRepository;
+        public MachinesController(IMachinesRepository machinesRepository)
         {
-            _context = context;
             _machinesRepository = machinesRepository;
         }
 
         [HttpGet]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
-        public IEnumerable<Machines> Get() => new MachinesRepository(_context).Find();
+        public async Task<IActionResult> Get()
+        {
+            var result = await _machinesRepository.Find();
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public IEnumerable<Machines> GetByJobTitleById(int id) => new MachinesRepository(_context).FindByMachineId(id);
+        public async Task<IActionResult> GetMachinesById(int id)
+        {
+            var result = await _machinesRepository.FindMachinesById(id);
+            return StatusCode(StatusCodes.Status200OK,result);
+        }
+
+        [HttpGet("getMachinesById/{id}")]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var result = await _machinesRepository.FindById(id);
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
 
         [HttpPost]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-
         public async Task<IActionResult> Post([FromBody] MachinesReq request)
         {
-            var job = await new MachinesRepository(_context).AddMachine(new Machines
+            var job = await _machinesRepository.Add (new Machines
             {
                 Name = request.Name,
                 StartTime = DateTime.Now,
@@ -42,18 +56,15 @@ namespace MilbridgeHoldings.Controllers
                 HoursWorked = request.HoursWorked,
                 WorkCentreId = request.WorkCentreId,
             });
-
             return StatusCode(StatusCodes.Status200OK, job);
         }
 
         [HttpPut("update")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-
         public async Task<IActionResult> Update([FromBody] MachinesReq req)
         {
-
-            var result = await _machinesRepository.UpdateAsync(new Machines
+            var result = await _machinesRepository.Update(new Machines
             {
                 Name = req.Name,
                 StartTime = DateTime.Now,
@@ -67,21 +78,6 @@ namespace MilbridgeHoldings.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public IActionResult DeleteTask([FromRoute] int id)
-        {
-            try
-            {
-                var repo = new MachinesRepository(_context);
-                var machineToDelete = repo.FindById(id);
-                if (machineToDelete == null) return NotFound($"Task with Id = {id} not found");
-                repo.Delete(id);
-                return Ok("Deleted Successfully");
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                "Error deleting data");
-            }
-        }
+       public async Task<IActionResult> Delete(int id) => Ok(await _machinesRepository.Delete(id));
     }
 }

@@ -12,45 +12,58 @@ namespace MilbridgeHoldings.Controllers
     [ApiController]
     public class JobTitleController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly JobRepository _jobRepository;
-        public JobTitleController(ApplicationDbContext context, JobRepository jobRepository)
+        private readonly IJobRepository _jobRepository;
+      
+        public JobTitleController(IJobRepository jobRepository)
         {
-            _context = context;
             _jobRepository = jobRepository;
         }
 
         [HttpGet]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
-        public IEnumerable<JobTitle> Get() => new JobRepository(_context).Find();
+        public async Task<IActionResult> GetJobTitle()
+        {
+            var result = await _jobRepository.Find();
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public IEnumerable<JobTitle> GetByJobTitleById(int id) => new JobRepository(_context).FindByJobId(id);
+        public async Task<IActionResult> GetByJobTitleById(int id)
+        {
+            var result = await _jobRepository.FindById(id);
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
+
+        [HttpGet("getjobsById/{id}")]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByJobTitlesById(int id)
+        {
+            var result = await _jobRepository.FindJobById(id);
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
 
         [HttpPost]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-
         public async Task<IActionResult> Post([FromBody] JobTitleRequest request )
         {
-            var job = await new JobRepository(_context).AddJobTitle(new JobTitle
+            var job = await _jobRepository.Add(new JobTitle
             {
                 Name = request.Name,
             });
-
             return StatusCode(StatusCodes.Status200OK, job);
         }
 
         [HttpPut("update")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-
         public async Task<IActionResult> Update([FromBody] JobTitle req)
         {
    
-            var result = await _jobRepository.UpdateAsync(new JobTitle
+            var result = await _jobRepository.Update(new JobTitle
             {
                 Id = req.Id,
                 Name = req.Name,
@@ -61,22 +74,7 @@ namespace MilbridgeHoldings.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public IActionResult DeleteTask([FromRoute] int id)
-        {
-            try
-            {
-                var repo = new JobRepository(_context);
-                var jobToDelete = repo.FindById(id);
-                if (jobToDelete == null) return NotFound($"Task with Id = {id} not found");
-                repo.Delete(id);
-                return Ok("Deleted Successfully");
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                "Error deleting data");
-            }
-        }
+        public async Task<IActionResult> Delete(int id) => Ok(await _jobRepository.Delete(id));
 
     }
 }

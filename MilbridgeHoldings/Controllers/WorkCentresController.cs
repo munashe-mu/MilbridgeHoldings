@@ -11,45 +11,59 @@ namespace MilbridgeHoldings.Controllers
     [ApiController]
     public class WorkCentresController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly WorkCentreRepository _workCentreRepository;
-        public WorkCentresController(ApplicationDbContext context, WorkCentreRepository workCentreRepository)
+        private readonly IWorkCentreRepository _workCentreRepository;
+
+        public WorkCentresController(IWorkCentreRepository workCentreRepository)
         {
-            _context = context;
             _workCentreRepository = workCentreRepository;
         }
 
         [HttpGet]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
-        public IEnumerable<WorkCentre> Get() => new WorkCentreRepository(_context).Find();
+        public async Task<IActionResult> Get()
+        {
+            var result = await _workCentreRepository.Find();
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public IEnumerable<WorkCentre> GetByWorkCentreById(int id) => new WorkCentreRepository(_context).FindByWorkCentreId(id);
+        public async Task<IActionResult> GetByWorkCentreById(int id)
+        {
+            var result = await _workCentreRepository.FindById(id);
+            return StatusCode(StatusCodes.Status200OK,result);
+        }
+
+        [HttpGet("getWorkCentresById/{id}")]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByWorkCentresById(int id)
+        {
+            var result = await _workCentreRepository.FindWorkCentreById(id);
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
 
         [HttpPost]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-
         public async Task<IActionResult> Post([FromBody] WorkCentreReq request)
         {
-            var job = await new WorkCentreRepository(_context).AddWorkCentre(new WorkCentre
+            var result = await _workCentreRepository.Add(new WorkCentre
             {
                 Name = request.Name,
                 DepartmentId = request.DepartmentId,
             });
-            return StatusCode(StatusCodes.Status200OK, job);
+            return StatusCode(StatusCodes.Status200OK, result);
         }
 
         [HttpPut("update")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-
         public async Task<IActionResult> Update([FromBody] WorkCentreReq req)
         {
 
-            var result = await _workCentreRepository.UpdateAsync(new WorkCentre
+            var result = await _workCentreRepository.Update(new WorkCentre
             {
                 Name = req.Name,
                 DepartmentId = req.DepartmentId,
@@ -60,22 +74,7 @@ namespace MilbridgeHoldings.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-        public IActionResult DeleteTask([FromRoute] int id)
-        {
-            try
-            {
-                var repo = new WorkCentreRepository(_context);
-                var workCentre = repo.FindById(id);
-                if (workCentre == null) return NotFound($"Task with Id = {id} not found");
-                repo.Delete(id);
-                return Ok("Deleted Successfully");
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                "Error deleting data");
-            }
-        }
+        public async Task<IActionResult> Delete(int id) => Ok(await _workCentreRepository.Delete(id));
 
     }
 }

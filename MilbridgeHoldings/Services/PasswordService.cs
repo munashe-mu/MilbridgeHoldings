@@ -67,7 +67,9 @@
         private const string upperCaseCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const string specialCharacters = "@#$%&?=+";
         private const string digitCharacters = "0123456789";
+#pragma warning disable SYSLIB0023 // Type or member is obsolete
         private readonly RNGCryptoServiceProvider _rng;
+#pragma warning restore SYSLIB0023 // Type or member is obsolete
         private int _maxSize;
         private int _minSize;
 
@@ -82,7 +84,9 @@
             _hasDigits = options.HasFlag(PasswordOptions.HasDigits);
             _hasCapitals = options.HasFlag(PasswordOptions.HasCapitals);
             _hasLower = options.HasFlag(PasswordOptions.HasLower);
+#pragma warning disable SYSLIB0023 // Type or member is obsolete
             _rng = new RNGCryptoServiceProvider();
+#pragma warning restore SYSLIB0023 // Type or member is obsolete
         }
 
         private int Maximum
@@ -188,7 +192,7 @@
                 if (_noRepeating)
                 {
                     var temp = pwdBuffer.ToString();
-                    var duplicateIndex = temp.IndexOf(nextCharacter);
+                    var duplicateIndex = temp!.IndexOf(nextCharacter);
                     while (duplicateIndex != -1)
                     {
                         nextCharacter = GetRandomCharacter(characterOptions);
@@ -269,9 +273,11 @@
             if (policy.MinimumSpecialChars > 0) options |= PasswordOptions.HasSymbols;
             if (policy.MinimumUpperCase > 0) options |= PasswordOptions.HasCapitals;
 
-            var service = new PasswordService(options);
-            service.Minimum = policy.MinimumLength;
-            service.Maximum = policy.MaximumLength;
+            var service = new PasswordService(options)
+            {
+                Minimum = policy.MinimumLength,
+                Maximum = policy.MaximumLength
+            };
             var generated = service.Generate();
             var matchesPolicy = policy.ValidateAsync(generated).Result;
 

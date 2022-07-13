@@ -1,45 +1,57 @@
-﻿using MilbridgeHoldings.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using MilbridgeHoldings.Data;
 
 namespace MilbridgeHoldings.Models.Data.Repositories
 {
-    public class MachinesRepository : CrudRepository<Machines>
+    public class MachinesRepository : IMachinesRepository
     {
         private readonly ApplicationDbContext _context;
-        public MachinesRepository(ApplicationDbContext context) : base(context) => _context = context;
-
-        public IEnumerable<Machines> FindByMachineId(int id)
+        public MachinesRepository(ApplicationDbContext context)
         {
-            return _context.Machines.Where(a => a.Id == id).ToList();
+            _context = context;
         }
 
-        public async Task<bool> AddMachine(Machines machines)
+        public async Task<Result<Machines>> Add(Machines request)
         {
-            await _context.Machines.AddAsync(machines);
+            await _context.AddAsync(request);
             await _context.SaveChangesAsync();
-            return true; 
+            return new Result<Machines>(request);       
         }
 
-        public async Task<bool> UpdateAsync(Machines machines)
+        public async Task<Result<bool>> Delete(int id)
         {
-
-            try
-            {
-
-                var entry = _context.Machines.First(e => e.Id == machines.Id);
-                if (entry == null) return false;
-                _context.Entry(entry).CurrentValues.SetValues(machines);
-                _context.SaveChanges();
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            var result = await _context.Machines.FindAsync(id);
+            if (result == null) return new Result<bool>(false, new List<string> { "Not Found" });
+            _context.Remove(result);
+            await _context.SaveChangesAsync();
+            return new Result<bool>(true, new List<string> { "Deleted Successfully" });
         }
 
-        public async Task FindById(int id)
+        public async Task<Result<IEnumerable<Machines>>> Find()
         {
-            _context.Machines.Where(a => a.Id == id).FirstOrDefault();
+            var result = await _context.Machines.ToListAsync();
+            return new Result<IEnumerable<Machines>>(result);
+        }
+
+        public async Task<Result<IEnumerable<Machines>>> FindById(int id)
+        {
+            var result = await _context.Machines.Where(x => x.Id == id).ToListAsync();
+            if (result.Count == 0) return new Result<IEnumerable<Machines>>(false, new List<string> { "Not Found"});
+            return new Result<IEnumerable<Machines>>(result);
+        }
+
+        public async Task<Result<Machines>> FindMachinesById(int Id)
+        {
+            var result = await _context.Machines.Where(x => x.Id == Id).FirstOrDefaultAsync();
+            if (result == null) return new Result<Machines>(false, new List<string> { "Not Found" });
+            return new Result<Machines>(result);
+        }
+
+        public async Task<Result<Machines>> Update(Machines request)
+        {
+            _context.Update(request);
+            await _context.SaveChangesAsync();
+            return new Result<Machines>(request);
         }
     }
 }

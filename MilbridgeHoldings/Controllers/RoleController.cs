@@ -24,7 +24,7 @@ namespace MilbridgeHoldings.Controllers
         public async Task<IActionResult> PostRole([FromBody] Role role)
         {
             var result = await _roleManager.CreateAsync(new IdentityRole { Name = role.Name});
-            return Ok(new Models.Local.ActionResult<string>(result.Succeeded, result.Succeeded ? "Application User Role Posted Successfully" : result.Errors.FirstOrDefault().Description));
+            return Ok(new Models.Local.ActionResult<string>(result.Succeeded, result.Succeeded ? "Application User Role Posted Successfully" : result.Errors.FirstOrDefault()!.Description));
         }
 
 
@@ -35,7 +35,7 @@ namespace MilbridgeHoldings.Controllers
             if (roles == null) return StatusCode(StatusCodes.Status404NotFound);
             roles.Name = role.Name;
             var result = await _roleManager.UpdateAsync(roles);
-            return Ok(new Models.Local.ActionResult<String>(result.Succeeded, result.Succeeded ? "Application User Role Updated Successfully" : result.Errors.FirstOrDefault().Description));
+            return Ok(new Models.Local.ActionResult<string>(result.Succeeded, result.Succeeded ? "Application User Role Updated Successfully" : result.Errors.FirstOrDefault()!.Description));
 
         }
 
@@ -45,7 +45,7 @@ namespace MilbridgeHoldings.Controllers
             var roles = await _roleManager.FindByIdAsync(id);
             if (roles == null) return StatusCode(StatusCodes.Status404NotFound);
             var result = await _roleManager.DeleteAsync(roles);
-            return Ok( new Models.Local.ActionResult<String>(result.Succeeded, result.Succeeded ? "Application User Role Deleted Successfully" : result.Errors.FirstOrDefault().Description));
+            return Ok( new Models.Local.ActionResult<string>(result.Succeeded, result.Succeeded ? "Application User Role Deleted Successfully" : result.Errors.FirstOrDefault()!.Description));
         }
     }
 }

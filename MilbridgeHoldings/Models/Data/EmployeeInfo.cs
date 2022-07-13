@@ -1,4 +1,5 @@
 ﻿using MilbridgeHoldings.Data;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MilbridgeHoldings.Models.Data
 {
@@ -8,9 +9,9 @@ namespace MilbridgeHoldings.Models.Data
         public int DepartmentId { get; set; }
         public int? JobTitleId { get; set; }
         public string? EmployeeNumber { get; set; }
-
-        public virtual Department? Department { get; set; }  
-        public virtual JobTitle? JobTitle { get; set;}
-        
+        [ForeignKey("DepartmentId")]
+        public Department? Department { get; set; }
+        [ForeignKey("JobTitleId")]
+        public JobTitle? JobTitle { get; set;}
     }
 }
